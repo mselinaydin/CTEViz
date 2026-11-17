@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>One brain, one person — CTE micro/macro</title>
+<style>
+:root{--ink:#19202b;--muted:#697484;--line:#e1e5e8;--paper:#f7f8fa;--red:#c94046;--yellow:#c1a014;--black:#222;}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #4b78b9;outline-offset:2px}
+.shell{display:grid;grid-template-columns:316px minmax(0,1fr);height:100dvh;min-height:400px}
+.sidebar{background:#fff;border-right:1px solid var(--line);padding:31px 25px 20px;display:flex;flex-direction:column;gap:22px;overflow-y:auto;z-index:2}
+.eyebrow{font-size:10px;font-weight:800;letter-spacing:.16em;color:#7c8591;text-transform:uppercase}
+h1{font-weight:650;font-size:29px;line-height:1.14;letter-spacing:-.045em;margin:9px 0 0}
+.intro{color:var(--muted);font-size:12px;line-height:1.6;margin:0}
+.big{font-weight:750;font-size:72px;letter-spacing:-.07em;line-height:1;color:var(--red);margin:0} .big small{font-size:22px;letter-spacing:-.01em;font-weight:600}
+.bigCaption{font-size:13px;line-height:1.5;color:#4d5a68;margin:6px 0 0}
+.kpi{padding-bottom:21px;border-bottom:1px solid var(--line)}
+.legend{display:flex;flex-direction:column;gap:11px}.legendRow{display:flex;align-items:center;gap:11px;font-size:12px}.legendRow strong{margin-left:auto;font-size:13px;font-variant-numeric:tabular-nums}.ring{height:17px;width:17px;border:3px solid currentColor;border-radius:45%;flex:none}.ring.black{color:#222}.ring.yellow{color:#e6b719}.ring.red{color:#c94046}
+.actions{margin-top:auto;display:flex;flex-direction:column;gap:12px}.nav{display:flex;gap:8px}.btn{border:1px solid #cfd5db;color:#242a35;background:#fff;border-radius:10px;padding:11px 12px;font-size:13px;font-weight:650}.btn:hover{background:#f2f5f7}.btn.primary{background:#202831;color:#fff;border-color:#202831}.btn.primary:hover{background:#374657}.btn:disabled{opacity:.3;cursor:default}.btn.flex{flex:1}.hint{font-size:11px;color:#83909c;line-height:1.6;margin:0}
+.stage{position:relative;overflow:hidden;min-width:0;background:#f5f7f9;background-image:radial-gradient(#cfd5db 0.55px,transparent .55px);background-size:23px 23px}
+.view{position:absolute;top:100px;bottom:115px;left:0;right:0;width:100%;height:auto;cursor:grab;touch-action:none;user-select:none}.view.dragging{cursor:grabbing}
+#artwork{width:100%;height:100%;display:block;overflow:visible}
+#artwork use{pointer-events:visiblePainted}
+.glass{position:absolute;pointer-events:none;top:26px;left:31px;right:30px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.slideheading{background:#fffdfcee;border:1px solid #e7e9e7;box-shadow:0 7px 24px #1e273114;padding:15px 18px;border-radius:11px;max-width:420px}
+.slideheading .num{font-size:10px;font-weight:750;color:#8d96a1;letter-spacing:.12em;text-transform:uppercase}
+.slideheading h2{font-size:20px;letter-spacing:-.03em;font-weight:720;margin:5px 0 5px}.slideheading p{font-size:12px;color:#616e79;line-height:1.5;margin:0}
+.countpill{background:#fff;color:#4b5562;border:1px solid var(--line);padding:9px 13px;font-size:12px;font-weight:600;border-radius:999px;white-space:nowrap;box-shadow:0 4px 15px #1e273110}
+.foot{position:absolute;left:24px;right:24px;bottom:18px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;gap:14px}
+.instructions{font-size:11px;color:#596575;background:#ffffffed;border:1px solid var(--line);padding:9px 12px;border-radius:9px}
+.counter{font-variant-numeric:tabular-nums;color:#586574;font-weight:650;font-size:12px;background:#ffffffed;padding:9px 12px;border:1px solid var(--line);border-radius:9px}
+.tools{display:flex;position:absolute;right:24px;bottom:69px;gap:6px}.mini{padding:0;width:38px;height:38px;border:1px solid #d5dade;border-radius:9px;background:#fff;box-shadow:0 4px 14px #20314114;font-size:19px}
+.labels{display:none;position:absolute;bottom:61px;left:50%;transform:translateX(-50%);display:flex;justify-content:center;gap:10px;pointer-events:none;opacity:0;transition:opacity .4s}.labels.show{opacity:1}.labels .group{width:128px;background:#fffefaed;border-radius:8px;padding:9px 6px;text-align:center;border:1px solid #e5e8ed;font-size:11px;color:#49545f}.labels strong{display:block;font-size:15px;color:#1c2630;padding-top:4px}
+ .statsDock{position:absolute;bottom:18px;left:22px;right:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;z-index:1;pointer-events:none}
+.statCard{background:#fffffff5;border:1px solid #d9dde2;border-radius:11px;text-align:center;padding:12px 8px 10px;box-shadow:0 3px 14px #19232a0b;opacity:.75;transition:opacity .2s,border-color .2s}
+.statCard.focus{opacity:1;border-color:#707d8b;box-shadow:0 0 0 2px #8792a122,0 3px 14px #19232a0b}
+.statCard .tag{font-size:12px;font-weight:700;letter-spacing:.01em}
+.statCard .val{font-size:21px;font-weight:750;letter-spacing:-.03em;margin-top:3px;font-variant-numeric:tabular-nums}
+.statCard[data-key="white"] .tag{color:#222}.statCard[data-key="yellow"] .tag{color:#b18c05}.statCard[data-key="red"] .tag{color:#bd3238}
+.tune{display:flex;gap:7px;flex-wrap:wrap}.tune .btn{flex:1;padding:9px 6px;font-size:11px}
+@media(max-width:760px){.shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.sidebar{padding:13px 17px;display:grid;grid-template-columns:1fr auto;gap:8px;overflow:visible}.sidebar h1{font-size:19px;margin-top:1px}.intro,.legend,.hint{display:none}.kpi{border:0;padding:0;grid-row:1/3;grid-column:2;align-self:center}.big{font-size:32px}.big small{font-size:13px}.bigCaption{display:none}.actions{grid-column:1/-1;flex-direction:row;margin-top:2px}.nav{width:100%}.stage .glass{left:12px;top:12px;right:12px}.view{top:76px;bottom:95px}.statsDock{left:8px;right:8px;bottom:10px;gap:4px}.statCard{padding:8px 2px}.statCard .tag{font-size:9px}.statCard .val{font-size:13px}.slideheading{padding:10px 12px;max-width:280px}.slideheading h2{font-size:15px}.slideheading p{font-size:10px}.countpill{display:none}.instructions{display:none}.labels .group{width:95px;font-size:10px}.labels strong{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.labels{transition:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <header><div class="eyebrow">BMJ · 2026 · NFL brain donor study</div><h1>One brain.<br>One person.</h1></header>
+    <p class="intro">Each icon is one examined brain. Three perfectly straight columns, stacked bottom to top. Explore the entire distribution, then focus on each complete column without cropping any brains.</p>
+    <div class="kpi"><p class="big">93.2<small>%</small></p><p class="bigCaption"><strong>315 of 338</strong> examined brains had CTE</p></div>
+    <div class="legend"><div class="eyebrow" style="margin-bottom:1px">Examined brains (n = 338)</div>
+      <div class="legendRow"><span class="ring black"></span><span>No CTE</span><strong>23 (6.8%)</strong></div>
+      <div class="legendRow"><span class="ring yellow"></span><span>Stages I–II</span><strong>64 (18.9%)</strong></div>
+      <div class="legendRow"><span class="ring red"></span><span>Stages III–IV</span><strong>251 (74.3%)</strong></div>
+    </div>
+    <div class="actions"><div class="eyebrow" id="sceneLabel">Scene 1 of 5</div>
+      <div class="nav"><button class="btn flex" id="prev" aria-label="Previous view">← Previous</button><button class="btn primary flex" id="next" aria-label="Next view">Next →</button></div>
+      <button class="btn" id="reset">Return to full view · 0</button>
+      <div class="tune"><button class="btn" id="saveView">Save this view</button><button class="btn" id="restoreViews">Restore defaults</button></div>
+      <p class="hint">Use ← → to change views. Drag or scroll to adjust framing; select “Save this view” to remember your adjustment on this device. F enters fullscreen.</p>
+    </div>
+  </aside>
+  <main class="stage" id="stage">
+    <div class="view" id="view">
+      <svg id="artwork" role="img" aria-label="338 examined brains arranged in three straight bottom-aligned columns; one icon per person" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10400" height="31660" viewBox="0 0 10400 31660"><defs>
+<g id="b0" stroke="#222222" stroke-width="3.1" stroke-linejoin="round" stroke-linecap="round"><path d="M 50,10 C 43,1 32,5 27,10 L 21,12 C 16,16 16,21 15,25 L 10,28 C 5,33 8,38 5,43 L 8,49 C 1,55 4,63 8,67 L 6,73 C 7,79 12,83 15,84 L 16,91 C 20,98 26,96 29,101 C 34,109 44,107 50,101 C 57,108 65,109 72,102 L 76,97 C 84,99 89,91 87,85 L 92,80 C 98,75 94,70 95,65 L 98,59 C 99,53 95,49 94,45 L 96,39 C 94,30 89,29 86,25 L 85,19 C 82,13 78,12 74,11 L 69,7 C 60,3 53,4 50,10 Z" fill="#ffffff" />
+<path d="M50 10 C56 26 44 31 50 45 C55 59 45 66 50 80 L50 101" fill="none" />
+<path d="M27 27 C35 27 30 41 20 43" fill="none" />
+<path d="M74 28 C63 30 73 42 82 43" fill="none" />
+<path d="M14 62 C29 53 33 73 46 66" fill="none" />
+<path d="M86 62 C71 53 67 73 54 66" fill="none" />
+<path d="M24 86 C32 81 40 87 40 95" fill="none" />
+<path d="M76 86 C68 81 60 87 60 95" fill="none" />
+</g>
+<g id="b1" stroke="#e6b719" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><path d="M 50,10 C 43,1 32,5 27,10 L 21,12 C 16,16 16,21 15,25 L 10,28 C 5,33 8,38 5,43 L 8,49 C 1,55 4,63 8,67 L 6,73 C 7,79 12,83 15,84 L 16,91 C 20,98 26,96 29,101 C 34,109 44,107 50,101 C 57,108 65,109 72,102 L 76,97 C 84,99 89,91 87,85 L 92,80 C 98,75 94,70 95,65 L 98,59 C 99,53 95,49 94,45 L 96,39 C 94,30 89,29 86,25 L 85,19 C 82,13 78,12 74,11 L 69,7 C 60,3 53,4 50,10 Z" fill="#ffffff" />
+<path d="M50 10 C56 26 44 31 50 45 C55 59 45 66 50 80 L50 101" fill="none" />
+<path d="M27 27 C35 27 30 41 20 43" fill="none" />
+<path d="M74 28 C63 30 73 42 82 43" fill="none" />
+<path d="M14 62 C29 53 33 73 46 66" fill="none" />
+<path d="M86 62 C71 53 67 73 54 66" fill="none" />
+<path d="M24 86 C32 81 40 87 40 95" fill="none" />
+<path d="M76 86 C68 81 60 87 60 95" fill="none" />
+</g>
+<g id="b2" stroke="#c94046" stroke-width="4.6" stroke-linejoin="round" stroke-linecap="round"><path d="M 50,10 C 43,1 32,5 27,10 L 21,12 C 16,16 16,21 15,25 L 10,28 C 5,33 8,38 5,43 L 8,49 C 1,55 4,63 8,67 L 6,73 C 7,79 12,83 15,84 L 16,91 C 20,98 26,96 29,101 C 34,109 44,107 50,101 C 57,108 65,109 72,102 L 76,97 C 84,99 89,91 87,85 L 92,80 C 98,75 94,70 95,65 L 98,59 C 99,53 95,49 94,45 L 96,39 C 94,30 89,29 86,25 L 85,19 C 82,13 78,12 74,11 L 69,7 C 60,3 53,4 50,10 Z" fill="#ffffff" />
+<path d="M50 10 C56 26 44 31 50 45 C55 59 45 66 50 80 L50 101" fill="none" />
+<path d="M27 27 C35 27 30 41 20 43" fill="none" />
+<path d="M74 28 C63 30 73 42 82 43" fill="none" />
+<path d="M14 62 C29 53 33 73 46 66" fill="none" />
+<path d="M86 62 C71 53 67 73 54 66" fill="none" />
+<path d="M24 86 C32 81 40 87 40 95" fill="none" />
+<path d="M76 86 C68 81 60 87 60 95" fill="none" />
+</g>
+<g id="b3" stroke="#222222" stroke-width="3.1" stroke-linejoin="round" stroke-linecap="round"><path d="M 50,10 C 43,1 32,5 27,10 L 21,12 C 16,16 16,21 15,25 L 10,28 C 5,33 8,38 5,43 L 8,49 C 1,55 4,63 8,67 L 6,73 C 7,79 12,83 15,84 L 16,91 C 20,98 26,96 29,101 C 34,109 44,107 50,101 C 57,108 65,109 72,102 L 76,97 C 84,99 89,91 87,85 L 92,80 C 98,75 94,70 95,65 L 98,59 C 99,53 95,49 94,45 L 96,39 C 94,30 89,29 86,25 L 85,19 C 82,13 78,12 74,11 L 69,7 C 60,3 53,4 50,10 Z" fill="#eceeef" />
+<path d="M50 10 C56 26 44 31 50 45 C55 59 45 66 50 80 L50 101" fill="none" />
+<path d="M27 27 C35 27 30 41 20 43" fill="none" />
+<path d="M74 28 C63 30 73 42 82 43" fill="none" />
+<path d="M14 62 C29 53 33 73 46 66" fill="none" />
+<path d="M86 62 C71 53 67 73 54 66" fill="none" />
+<path d="M24 86 C32 81 40 87 40 95" fill="none" />
+<path d="M76 86 C68 81 60 87 60 95" fill="none" />
+</g>
+</defs>
+<use xlink:href="#b0" x="50" y="31295" /><use xlink:href="#b0" x="50" y="31170" /><use xlink:href="#b0" x="50" y="31045" /><use xlink:href="#b0" x="50" y="30920" /><use xlink:href="#b0" x="50" y="30795" /><use xlink:href="#b0" x="50" y="30670" /><use xlink:href="#b0" x="50" y="30545" /><use xlink:href="#b0" x="50" y="30420" /><use xlink:href="#b0" x="50" y="30295" /><use xlink:href="#b0" x="50" y="30170" /><use xlink:href="#b0" x="50" y="30045" /><use xlink:href="#b0" x="50" y="29920" /><use xlink:href="#b0" x="50" y="29795" /><use xlink:href="#b0" x="50" y="29670" /><use xlink:href="#b0" x="50" y="29545" /><use xlink:href="#b0" x="50" y="29420" /><use xlink:href="#b0" x="50" y="29295" /><use xlink:href="#b0" x="50" y="29170" /><use xlink:href="#b0" x="50" y="29045" /><use xlink:href="#b0" x="50" y="28920" /><use xlink:href="#b0" x="50" y="28795" /><use xlink:href="#b0" x="50" y="28670" /><use xlink:href="#b0" x="50" y="28545" /><use xlink:href="#b1" x="4900" y="31295" /><use xlink:href="#b1" x="4900" y="31170" /><use xlink:href="#b1" x="4900" y="31045" /><use xlink:href="#b1" x="4900" y="30920" /><use xlink:href="#b1" x="4900" y="30795" /><use xlink:href="#b1" x="4900" y="30670" /><use xlink:href="#b1" x="4900" y="30545" /><use xlink:href="#b1" x="4900" y="30420" /><use xlink:href="#b1" x="4900" y="30295" /><use xlink:href="#b1" x="4900" y="30170" /><use xlink:href="#b1" x="4900" y="30045" /><use xlink:href="#b1" x="4900" y="29920" /><use xlink:href="#b1" x="4900" y="29795" /><use xlink:href="#b1" x="4900" y="29670" /><use xlink:href="#b1" x="4900" y="29545" /><use xlink:href="#b1" x="4900" y="29420" /><use xlink:href="#b1" x="4900" y="29295" /><use xlink:href="#b1" x="4900" y="29170" /><use xlink:href="#b1" x="4900" y="29045" /><use xlink:href="#b1" x="4900" y="28920" /><use xlink:href="#b1" x="4900" y="28795" /><use xlink:href="#b1" x="4900" y="28670" /><use xlink:href="#b1" x="4900" y="28545" /><use xlink:href="#b1" x="4900" y="28420" /><use xlink:href="#b1" x="4900" y="28295" /><use xlink:href="#b1" x="4900" y="28170" /><use xlink:href="#b1" x="4900" y="28045" /><use xlink:href="#b1" x="4900" y="27920" /><use xlink:href="#b1" x="4900" y="27795" /><use xlink:href="#b1" x="4900" y="27670" /><use xlink:href="#b1" x="4900" y="27545" /><use xlink:href="#b1" x="4900" y="27420" /><use xlink:href="#b1" x="4900" y="27295" /><use xlink:href="#b1" x="4900" y="27170" /><use xlink:href="#b1" x="4900" y="27045" /><use xlink:href="#b1" x="4900" y="26920" /><use xlink:href="#b1" x="4900" y="26795" /><use xlink:href="#b1" x="4900" y="26670" /><use xlink:href="#b1" x="4900" y="26545" /><use xlink:href="#b1" x="4900" y="26420" /><use xlink:href="#b1" x="4900" y="26295" /><use xlink:href="#b1" x="4900" y="26170" /><use xlink:href="#b1" x="4900" y="26045" /><use xlink:href="#b1" x="4900" y="25920" /><use xlink:href="#b1" x="4900" y="25795" /><use xlink:href="#b1" x="4900" y="25670" /><use xlink:href="#b1" x="4900" y="25545" /><use xlink:href="#b1" x="4900" y="25420" /><use xlink:href="#b1" x="4900" y="25295" /><use xlink:href="#b1" x="4900" y="25170" /><use xlink:href="#b1" x="4900" y="25045" /><use xlink:href="#b1" x="4900" y="24920" /><use xlink:href="#b1" x="4900" y="24795" /><use xlink:href="#b1" x="4900" y="24670" /><use xlink:href="#b1" x="4900" y="24545" /><use xlink:href="#b1" x="4900" y="24420" /><use xlink:href="#b1" x="4900" y="24295" /><use xlink:href="#b1" x="4900" y="24170" /><use xlink:href="#b1" x="4900" y="24045" /><use xlink:href="#b1" x="4900" y="23920" /><use xlink:href="#b1" x="4900" y="23795" /><use xlink:href="#b1" x="4900" y="23670" /><use xlink:href="#b1" x="4900" y="23545" /><use xlink:href="#b1" x="4900" y="23420" /><use xlink:href="#b2" x="9900" y="31295" /><use xlink:href="#b2" x="9900" y="31170" /><use xlink:href="#b2" x="9900" y="31045" /><use xlink:href="#b2" x="9900" y="30920" /><use xlink:href="#b2" x="9900" y="30795" /><use xlink:href="#b2" x="9900" y="30670" /><use xlink:href="#b2" x="9900" y="30545" /><use xlink:href="#b2" x="9900" y="30420" /><use xlink:href="#b2" x="9900" y="30295" /><use xlink:href="#b2" x="9900" y="30170" /><use xlink:href="#b2" x="9900" y="30045" /><use xlink:href="#b2" x="9900" y="29920" /><use xlink:href="#b2" x="9900" y="29795" /><use xlink:href="#b2" x="9900" y="29670" /><use xlink:href="#b2" x="9900" y="29545" /><use xlink:href="#b2" x="9900" y="29420" /><use xlink:href="#b2" x="9900" y="29295" /><use xlink:href="#b2" x="9900" y="29170" /><use xlink:href="#b2" x="9900" y="29045" /><use xlink:href="#b2" x="9900" y="28920" /><use xlink:href="#b2" x="9900" y="28795" /><use xlink:href="#b2" x="9900" y="28670" /><use xlink:href="#b2" x="9900" y="28545" /><use xlink:href="#b2" x="9900" y="28420" /><use xlink:href="#b2" x="9900" y="28295" /><use xlink:href="#b2" x="9900" y="28170" /><use xlink:href="#b2" x="9900" y="28045" /><use xlink:href="#b2" x="9900" y="27920" /><use xlink:href="#b2" x="9900" y="27795" /><use xlink:href="#b2" x="9900" y="27670" /><use xlink:href="#b2" x="9900" y="27545" /><use xlink:href="#b2" x="9900" y="27420" /><use xlink:href="#b2" x="9900" y="27295" /><use xlink:href="#b2" x="9900" y="27170" /><use xlink:href="#b2" x="9900" y="27045" /><use xlink:href="#b2" x="9900" y="26920" /><use xlink:href="#b2" x="9900" y="26795" /><use xlink:href="#b2" x="9900" y="26670" /><use xlink:href="#b2" x="9900" y="26545" /><use xlink:href="#b2" x="9900" y="26420" /><use xlink:href="#b2" x="9900" y="26295" /><use xlink:href="#b2" x="9900" y="26170" /><use xlink:href="#b2" x="9900" y="26045" /><use xlink:href="#b2" x="9900" y="25920" /><use xlink:href="#b2" x="9900" y="25795" /><use xlink:href="#b2" x="9900" y="25670" /><use xlink:href="#b2" x="9900" y="25545" /><use xlink:href="#b2" x="9900" y="25420" /><use xlink:href="#b2" x="9900" y="25295" /><use xlink:href="#b2" x="9900" y="25170" /><use xlink:href="#b2" x="9900" y="25045" /><use xlink:href="#b2" x="9900" y="24920" /><use xlink:href="#b2" x="9900" y="24795" /><use xlink:href="#b2" x="9900" y="24670" /><use xlink:href="#b2" x="9900" y="24545" /><use xlink:href="#b2" x="9900" y="24420" /><use xlink:href="#b2" x="9900" y="24295" /><use xlink:href="#b2" x="9900" y="24170" /><use xlink:href="#b2" x="9900" y="24045" /><use xlink:href="#b2" x="9900" y="23920" /><use xlink:href="#b2" x="9900" y="23795" /><use xlink:href="#b2" x="9900" y="23670" /><use xlink:href="#b2" x="9900" y="23545" /><use xlink:href="#b2" x="9900" y="23420" /><use xlink:href="#b2" x="9900" y="23295" /><use xlink:href="#b2" x="9900" y="23170" /><use xlink:href="#b2" x="9900" y="23045" /><use xlink:href="#b2" x="9900" y="22920" /><use xlink:href="#b2" x="9900" y="22795" /><use xlink:href="#b2" x="9900" y="22670" /><use xlink:href="#b2" x="9900" y="22545" /><use xlink:href="#b2" x="9900" y="22420" /><use xlink:href="#b2" x="9900" y="22295" /><use xlink:href="#b2" x="9900" y="22170" /><use xlink:href="#b2" x="9900" y="22045" /><use xlink:href="#b2" x="9900" y="21920" /><use xlink:href="#b2" x="9900" y="21795" /><use xlink:href="#b2" x="9900" y="21670" /><use xlink:href="#b2" x="9900" y="21545" /><use xlink:href="#b2" x="9900" y="21420" /><use xlink:href="#b2" x="9900" y="21295" /><use xlink:href="#b2" x="9900" y="21170" /><use xlink:href="#b2" x="9900" y="21045" /><use xlink:href="#b2" x="9900" y="20920" /><use xlink:href="#b2" x="9900" y="20795" /><use xlink:href="#b2" x="9900" y="20670" /><use xlink:href="#b2" x="9900" y="20545" /><use xlink:href="#b2" x="9900" y="20420" /><use xlink:href="#b2" x="9900" y="20295" /><use xlink:href="#b2" x="9900" y="20170" /><use xlink:href="#b2" x="9900" y="20045" /><use xlink:href="#b2" x="9900" y="19920" /><use xlink:href="#b2" x="9900" y="19795" /><use xlink:href="#b2" x="9900" y="19670" /><use xlink:href="#b2" x="9900" y="19545" /><use xlink:href="#b2" x="9900" y="19420" /><use xlink:href="#b2" x="9900" y="19295" /><use xlink:href="#b2" x="9900" y="19170" /><use xlink:href="#b2" x="9900" y="19045" /><use xlink:href="#b2" x="9900" y="18920" /><use xlink:href="#b2" x="9900" y="18795" /><use xlink:href="#b2" x="9900" y="18670" /><use xlink:href="#b2" x="9900" y="18545" /><use xlink:href="#b2" x="9900" y="18420" /><use xlink:href="#b2" x="9900" y="18295" /><use xlink:href="#b2" x="9900" y="18170" /><use xlink:href="#b2" x="9900" y="18045" /><use xlink:href="#b2" x="9900" y="17920" /><use xlink:href="#b2" x="9900" y="17795" /><use xlink:href="#b2" x="9900" y="17670" /><use xlink:href="#b2" x="9900" y="17545" /><use xlink:href="#b2" x="9900" y="17420" /><use xlink:href="#b2" x="9900" y="17295" /><use xlink:href="#b2" x="9900" y="17170" /><use xlink:href="#b2" x="9900" y="17045" /><use xlink:href="#b2" x="9900" y="16920" /><use xlink:href="#b2" x="9900" y="16795" /><use xlink:href="#b2" x="9900" y="16670" /><use xlink:href="#b2" x="9900" y="16545" /><use xlink:href="#b2" x="9900" y="16420" /><use xlink:href="#b2" x="9900" y="16295" /><use xlink:href="#b2" x="9900" y="16170" /><use xlink:href="#b2" x="9900" y="16045" /><use xlink:href="#b2" x="9900" y="15920" /><use xlink:href="#b2" x="9900" y="15795" /><use xlink:href="#b2" x="9900" y="15670" /><use xlink:href="#b2" x="9900" y="15545" /><use xlink:href="#b2" x="9900" y="15420" /><use xlink:href="#b2" x="9900" y="15295" /><use xlink:href="#b2" x="9900" y="15170" /><use xlink:href="#b2" x="9900" y="15045" /><use xlink:href="#b2" x="9900" y="14920" /><use xlink:href="#b2" x="9900" y="14795" /><use xlink:href="#b2" x="9900" y="14670" /><use xlink:href="#b2" x="9900" y="14545" /><use xlink:href="#b2" x="9900" y="14420" /><use xlink:href="#b2" x="9900" y="14295" /><use xlink:href="#b2" x="9900" y="14170" /><use xlink:href="#b2" x="9900" y="14045" /><use xlink:href="#b2" x="9900" y="13920" /><use xlink:href="#b2" x="9900" y="13795" /><use xlink:href="#b2" x="9900" y="13670" /><use xlink:href="#b2" x="9900" y="13545" /><use xlink:href="#b2" x="9900" y="13420" /><use xlink:href="#b2" x="9900" y="13295" /><use xlink:href="#b2" x="9900" y="13170" /><use xlink:href="#b2" x="9900" y="13045" /><use xlink:href="#b2" x="9900" y="12920" /><use xlink:href="#b2" x="9900" y="12795" /><use xlink:href="#b2" x="9900" y="12670" /><use xlink:href="#b2" x="9900" y="12545" /><use xlink:href="#b2" x="9900" y="12420" /><use xlink:href="#b2" x="9900" y="12295" /><use xlink:href="#b2" x="9900" y="12170" /><use xlink:href="#b2" x="9900" y="12045" /><use xlink:href="#b2" x="9900" y="11920" /><use xlink:href="#b2" x="9900" y="11795" /><use xlink:href="#b2" x="9900" y="11670" /><use xlink:href="#b2" x="9900" y="11545" /><use xlink:href="#b2" x="9900" y="11420" /><use xlink:href="#b2" x="9900" y="11295" /><use xlink:href="#b2" x="9900" y="11170" /><use xlink:href="#b2" x="9900" y="11045" /><use xlink:href="#b2" x="9900" y="10920" /><use xlink:href="#b2" x="9900" y="10795" /><use xlink:href="#b2" x="9900" y="10670" /><use xlink:href="#b2" x="9900" y="10545" /><use xlink:href="#b2" x="9900" y="10420" /><use xlink:href="#b2" x="9900" y="10295" /><use xlink:href="#b2" x="9900" y="10170" /><use xlink:href="#b2" x="9900" y="10045" /><use xlink:href="#b2" x="9900" y="9920" /><use xlink:href="#b2" x="9900" y="9795" /><use xlink:href="#b2" x="9900" y="9670" /><use xlink:href="#b2" x="9900" y="9545" /><use xlink:href="#b2" x="9900" y="9420" /><use xlink:href="#b2" x="9900" y="9295" /><use xlink:href="#b2" x="9900" y="9170" /><use xlink:href="#b2" x="9900" y="9045" /><use xlink:href="#b2" x="9900" y="8920" /><use xlink:href="#b2" x="9900" y="8795" /><use xlink:href="#b2" x="9900" y="8670" /><use xlink:href="#b2" x="9900" y="8545" /><use xlink:href="#b2" x="9900" y="8420" /><use xlink:href="#b2" x="9900" y="8295" /><use xlink:href="#b2" x="9900" y="8170" /><use xlink:href="#b2" x="9900" y="8045" /><use xlink:href="#b2" x="9900" y="7920" /><use xlink:href="#b2" x="9900" y="7795" /><use xlink:href="#b2" x="9900" y="7670" /><use xlink:href="#b2" x="9900" y="7545" /><use xlink:href="#b2" x="9900" y="7420" /><use xlink:href="#b2" x="9900" y="7295" /><use xlink:href="#b2" x="9900" y="7170" /><use xlink:href="#b2" x="9900" y="7045" /><use xlink:href="#b2" x="9900" y="6920" /><use xlink:href="#b2" x="9900" y="6795" /><use xlink:href="#b2" x="9900" y="6670" /><use xlink:href="#b2" x="9900" y="6545" /><use xlink:href="#b2" x="9900" y="6420" /><use xlink:href="#b2" x="9900" y="6295" /><use xlink:href="#b2" x="9900" y="6170" /><use xlink:href="#b2" x="9900" y="6045" /><use xlink:href="#b2" x="9900" y="5920" /><use xlink:href="#b2" x="9900" y="5795" /><use xlink:href="#b2" x="9900" y="5670" /><use xlink:href="#b2" x="9900" y="5545" /><use xlink:href="#b2" x="9900" y="5420" /><use xlink:href="#b2" x="9900" y="5295" /><use xlink:href="#b2" x="9900" y="5170" /><use xlink:href="#b2" x="9900" y="5045" /><use xlink:href="#b2" x="9900" y="4920" /><use xlink:href="#b2" x="9900" y="4795" /><use xlink:href="#b2" x="9900" y="4670" /><use xlink:href="#b2" x="9900" y="4545" /><use xlink:href="#b2" x="9900" y="4420" /><use xlink:href="#b2" x="9900" y="4295" /><use xlink:href="#b2" x="9900" y="4170" /><use xlink:href="#b2" x="9900" y="4045" /><use xlink:href="#b2" x="9900" y="3920" /><use xlink:href="#b2" x="9900" y="3795" /><use xlink:href="#b2" x="9900" y="3670" /><use xlink:href="#b2" x="9900" y="3545" /><use xlink:href="#b2" x="9900" y="3420" /><use xlink:href="#b2" x="9900" y="3295" /><use xlink:href="#b2" x="9900" y="3170" /><use xlink:href="#b2" x="9900" y="3045" /><use xlink:href="#b2" x="9900" y="2920" /><use xlink:href="#b2" x="9900" y="2795" /><use xlink:href="#b2" x="9900" y="2670" /><use xlink:href="#b2" x="9900" y="2545" /><use xlink:href="#b2" x="9900" y="2420" /><use xlink:href="#b2" x="9900" y="2295" /><use xlink:href="#b2" x="9900" y="2170" /><use xlink:href="#b2" x="9900" y="2045" /><use xlink:href="#b2" x="9900" y="1920" /><use xlink:href="#b2" x="9900" y="1795" /><use xlink:href="#b2" x="9900" y="1670" /><use xlink:href="#b2" x="9900" y="1545" /><use xlink:href="#b2" x="9900" y="1420" /><use xlink:href="#b2" x="9900" y="1295" /><use xlink:href="#b2" x="9900" y="1170" /><use xlink:href="#b2" x="9900" y="1045" /><use xlink:href="#b2" x="9900" y="920" /><use xlink:href="#b2" x="9900" y="795" /><use xlink:href="#b2" x="9900" y="670" /><use xlink:href="#b2" x="9900" y="545" /><use xlink:href="#b2" x="9900" y="420" /><use xlink:href="#b2" x="9900" y="295" /><use xlink:href="#b2" x="9900" y="170" /><use xlink:href="#b2" x="9900" y="45" /></svg>
+    </div>
+    <div class="glass"><div class="slideheading"><div class="num" id="sceneNumber">01 / 05 · MACRO</div><h2 id="sceneTitle">The observed distribution</h2><p id="sceneDesc">Three columns rise from the same baseline. The red column dominates.</p></div><div class="countpill">338 icons · 338 people</div></div>
+    <div class="statsDock" id="statsDock" aria-label="Percentages among 338 examined brains">
+      <div class="statCard" data-key="white"><div class="tag">No CTE</div><div class="val">23 (6.8%)</div></div>
+      <div class="statCard" data-key="yellow"><div class="tag">Stages I–II</div><div class="val">64 (18.9%)</div></div>
+      <div class="statCard" data-key="red"><div class="tag">Stages III–IV</div><div class="val">251 (74.3%)</div></div>
+    </div>
+    <div class="tools"><button class="mini" id="zoomIn" aria-label="Zoom in">+</button><button class="mini" id="zoomOut" aria-label="Zoom out">−</button><button class="mini" id="fullscreen" aria-label="Fullscreen">⛶</button></div>
+    
+  </main>
+</div>
+<script>
+(()=>{
+'use strict';
+const svg=document.getElementById('artwork'), view=document.getElementById('view'), stage=document.getElementById('stage');
+const artCount=svg.querySelectorAll('use').length;
+if(artCount!==338) console.error('Unexpected icon count: ',artCount);
+// All presets fit the complete height of the relevant column. Coordinates are from the original SVG.
+const defaultFrames=[
+ {k:'OVERVIEW',title:'All examined brains',desc:'338 people. Three complete columns, stacked upward from the same bottom baseline.',target:'all'},
+ {k:'NO CTE',title:'No CTE — complete column',desc:'All 23 brains are visible from bottom to top. 6.8% of examined brains.',target:'white'},
+ {k:'STAGES I–II',title:'Stages I–II — complete column',desc:'All 64 brains are visible from bottom to top. 18.9% of examined brains.',target:'yellow'},
+ {k:'STAGES III–IV',title:'Stages III–IV — complete column',desc:'All 251 brains are visible from bottom to top. 74.3% of examined brains.',target:'red'},
+ {k:'OVERVIEW',title:'Return to the overall distribution',desc:'315 of 338 examined brains had CTE (93.2%).',target:'all'}
+];
+const frames=defaultFrames.map(f=>({...f}));
+const storageKey='cte-full-column-preset-v2';
+try{const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');Object.keys(saved).forEach(k=>{const i=Number(k), b=saved[k];if(frames[i]&&b&&['x','y','w','h'].every(prop=>Number.isFinite(b[prop])))frames[i].customBox=b;});}catch(e){}
+function stageRatio(){const r=document.getElementById('view').getBoundingClientRect();return r.width/r.height||1.6;}
+function fitToColumn(target){
+  // SVG brain: x=specified x through x+100; y=brain start through brain start+107.
+  const configs={white:{cx:100,top:28545,bottom:31405},yellow:{cx:4950,top:23420,bottom:31405},red:{cx:9950,top:45,bottom:31405},all:{cx:5200,top:45,bottom:31405}};
+  const cfg=configs[target];
+  const margin=target==='all'?1200:Math.max(190,(cfg.bottom-cfg.top)*.055);
+  const h=cfg.bottom-cfg.top+margin*2;
+  const minW=target==='all'?11600:target==='red'?1500:700;
+  const w=Math.max(minW,h*stageRatio());
+  return {x:cfg.cx-w/2,y:cfg.top-margin,w,h};
+}
+function sceneBox(i){return frames[i].customBox||fitToColumn(frames[i].target);}
+let index=0,current=sceneBox(0),anim=null,isDragging=false,dragData=null;
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const setBox=b=>{current={...b};svg.setAttribute('viewBox',[b.x,b.y,b.w,b.h].join(' '));};
+function renderScene(){
+ const sc=frames[index], pad=String(index+1).padStart(2,'0'), total=String(frames.length).padStart(2,'0');
+ document.getElementById('sceneNumber').textContent=`${pad} / ${total} · ${sc.k}`;
+ document.getElementById('sceneTitle').textContent=sc.title;
+ document.getElementById('sceneDesc').textContent=sc.desc;
+ document.getElementById('sceneLabel').textContent=`Scene ${index+1} of ${frames.length}`;
+ document.getElementById('prev').disabled=index===0;
+ document.getElementById('next').disabled=index===frames.length-1;
+ document.querySelectorAll('.statCard').forEach(el=>el.classList.toggle('focus',sc.target==='all'||el.dataset.key===sc.target));
+}
+function flyTo(box){if(anim)cancelAnimationFrame(anim);const start={...current},ts=performance.now(),duration=reduced?0:1150;function step(t){const a=duration?Math.min(1,(t-ts)/duration):1, e=a<.5?4*a*a*a:1-Math.pow(-2*a+2,3)/2;setBox({x:start.x+(box.x-start.x)*e,y:start.y+(box.y-start.y)*e,w:start.w+(box.w-start.w)*e,h:start.h+(box.h-start.h)*e});if(a<1)anim=requestAnimationFrame(step);else anim=null;}anim=requestAnimationFrame(step)}
+function go(i){index=Math.max(0,Math.min(frames.length-1,i));renderScene();flyTo(sceneBox(index))}
+function rect(){return svg.getBoundingClientRect()}
+// SVG preserveAspectRatio defaults to xMidYMid meet, so zoom around the actual drawn image.
+function pointToWorld(clientX,clientY){const r=rect();const s=Math.min(r.width/current.w,r.height/current.h);const offX=(r.width-current.w*s)/2,offY=(r.height-current.h*s)/2;return{x:current.x+(clientX-r.left-offX)/s,y:current.y+(clientY-r.top-offY)/s}}
+function zoomAt(factor,cx,cy){if(anim){cancelAnimationFrame(anim);anim=null;}let p=pointToWorld(cx,cy);let newW=Math.max(32,Math.min(200000,current.w*factor)),newH=Math.max(40,Math.min(200000,current.h*factor));const nx=p.x-(p.x-current.x)*(newW/current.w),ny=p.y-(p.y-current.y)*(newH/current.h);setBox({x:nx,y:ny,w:newW,h:newH});}
+document.getElementById('prev').addEventListener('click',()=>go(index-1));document.getElementById('next').addEventListener('click',()=>go(index+1));document.getElementById('reset').addEventListener('click',()=>go(0));
+document.getElementById('saveView').addEventListener('click',()=>{
+ frames[index].customBox={...current};
+ try{const data={};frames.forEach((f,i)=>{if(f.customBox)data[i]=f.customBox;});localStorage.setItem(storageKey,JSON.stringify(data));}
+ catch(e){alert('Your browser could not save locally. You can still use the view during this session.');return;}
+ const b=document.getElementById('saveView');b.textContent='Saved ✓';setTimeout(()=>b.textContent='Save this view',1400);
+});
+document.getElementById('restoreViews').addEventListener('click',()=>{
+ frames.forEach(f=>delete f.customBox);try{localStorage.removeItem(storageKey);}catch(e){}
+ go(index);
+});
+document.getElementById('zoomIn').addEventListener('click',()=>{let r=rect();zoomAt(.65,r.left+r.width/2,r.top+r.height/2)});
+document.getElementById('zoomOut').addEventListener('click',()=>{let r=rect();zoomAt(1.55,r.left+r.width/2,r.top+r.height/2)});
+document.getElementById('fullscreen').addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()});
+view.addEventListener('wheel',e=>{e.preventDefault();zoomAt(Math.exp(e.deltaY*.0014),e.clientX,e.clientY)},{passive:false});
+view.addEventListener('dblclick',e=>zoomAt(.42,e.clientX,e.clientY));
+const active=new Map();let pinchDistance=null;
+view.addEventListener('pointerdown',e=>{if(anim)cancelAnimationFrame(anim);anim=null;view.setPointerCapture(e.pointerId);active.set(e.pointerId,{x:e.clientX,y:e.clientY});dragData={x:e.clientX,y:e.clientY,box:{...current}};isDragging=true;view.classList.add('dragging')});
+view.addEventListener('pointermove',e=>{if(!active.has(e.pointerId))return;let prev=active.get(e.pointerId);active.set(e.pointerId,{x:e.clientX,y:e.clientY});const arr=[...active.values()];if(arr.length===2){const dx=arr[0].x-arr[1].x,dy=arr[0].y-arr[1].y,dist=Math.hypot(dx,dy);if(pinchDistance)zoomAt(pinchDistance/dist,(arr[0].x+arr[1].x)/2,(arr[0].y+arr[1].y)/2);pinchDistance=dist;}else if(arr.length===1&&isDragging){const r=rect(),scale=Math.min(r.width/current.w,r.height/current.h);setBox({x:current.x-(e.clientX-prev.x)/scale,y:current.y-(e.clientY-prev.y)/scale,w:current.w,h:current.h});}});
+function endPointer(e){active.delete(e.pointerId);pinchDistance=null;if(active.size===0){isDragging=false;view.classList.remove('dragging')}}
+view.addEventListener('pointerup',endPointer);view.addEventListener('pointercancel',endPointer);
+document.addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(index+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(index-1)}else if(e.key==='Home'||e.key==='0'){e.preventDefault();go(0)}else if(e.key==='f'||e.key==='F'){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()}else if(e.key==='+'||e.key==='='){let r=rect();zoomAt(.65,r.left+r.width/2,r.top+r.height/2)}else if(e.key==='-'){let r=rect();zoomAt(1.55,r.left+r.width/2,r.top+r.height/2)}});
+window.addEventListener('resize',()=>{if(!frames[index].customBox)setBox(sceneBox(index));});
+setBox(current);renderScene();
+})();
+</script>
+</body></html>
