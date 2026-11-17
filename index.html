@@ -38,7 +38,7 @@ h1{font-weight:650;font-size:29px;line-height:1.14;letter-spacing:-.045em;margin
 .statCard .tag{font-size:12px;font-weight:700;letter-spacing:.01em}
 .statCard .val{font-size:21px;font-weight:750;letter-spacing:-.03em;margin-top:3px;font-variant-numeric:tabular-nums}
 .statCard[data-key="white"] .tag{color:#222}.statCard[data-key="yellow"] .tag{color:#b18c05}.statCard[data-key="red"] .tag{color:#bd3238}
-.tune{display:flex;gap:7px;flex-wrap:wrap}.tune .btn{flex:1;padding:9px 6px;font-size:11px}
+.tune{display:flex;gap:7px;flex-wrap:wrap}.tune.secondary .btn{flex:1}.tune .btn:disabled{opacity:.32}.tune .btn{flex:1;padding:9px 6px;font-size:11px}
 @media(max-width:760px){.shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.sidebar{padding:13px 17px;display:grid;grid-template-columns:1fr auto;gap:8px;overflow:visible}.sidebar h1{font-size:19px;margin-top:1px}.intro,.legend,.hint{display:none}.kpi{border:0;padding:0;grid-row:1/3;grid-column:2;align-self:center}.big{font-size:32px}.big small{font-size:13px}.bigCaption{display:none}.actions{grid-column:1/-1;flex-direction:row;margin-top:2px}.nav{width:100%}.stage .glass{left:12px;top:12px;right:12px}.view{top:76px;bottom:95px}.statsDock{left:8px;right:8px;bottom:10px;gap:4px}.statCard{padding:8px 2px}.statCard .tag{font-size:9px}.statCard .val{font-size:13px}.slideheading{padding:10px 12px;max-width:280px}.slideheading h2{font-size:15px}.slideheading p{font-size:10px}.countpill{display:none}.instructions{display:none}.labels .group{width:95px;font-size:10px}.labels strong{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.labels{transition:none}}
 </style>
@@ -57,8 +57,8 @@ h1{font-weight:650;font-size:29px;line-height:1.14;letter-spacing:-.045em;margin
     <div class="actions"><div class="eyebrow" id="sceneLabel">Scene 1 of 5</div>
       <div class="nav"><button class="btn flex" id="prev" aria-label="Previous view">← Previous</button><button class="btn primary flex" id="next" aria-label="Next view">Next →</button></div>
       <button class="btn" id="reset">Return to full view · 0</button>
-      <div class="tune"><button class="btn" id="saveView">Save this view</button><button class="btn" id="restoreViews">Restore defaults</button></div>
-      <p class="hint">Use ← → to change views. Drag or scroll to adjust framing; select “Save this view” to remember your adjustment on this device. F enters fullscreen.</p>
+      <div class="tune"><button class="btn primary" id="addView">+ Add new view</button><button class="btn" id="saveView">Save this view</button></div><div class="tune secondary"><button class="btn" id="renameView">Rename view</button><button class="btn" id="deleteView">Delete view</button><button class="btn" id="restoreViews">Restore presets</button></div>
+      <p class="hint">Zoom into a brain, then choose “Add new view” to create another slide at that position. Use ← → to navigate; “Save this view” updates the active slide. Changes are saved in this browser when storage is available. F enters fullscreen.</p>
     </div>
   </aside>
   <main class="stage" id="stage">
@@ -128,8 +128,20 @@ const defaultFrames=[
  {k:'OVERVIEW',title:'Return to the overall distribution',desc:'315 of 338 examined brains had CTE (93.2%).',target:'all'}
 ];
 const frames=defaultFrames.map(f=>({...f}));
+const extraKey='cte-extra-views-v1';
 const storageKey='cte-full-column-preset-v2';
 try{const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');Object.keys(saved).forEach(k=>{const i=Number(k), b=saved[k];if(frames[i]&&b&&['x','y','w','h'].every(prop=>Number.isFinite(b[prop])))frames[i].customBox=b;});}catch(e){}
+// Additional user-created scenes are stored separately, so existing five saved presets survive.
+try{const extras=JSON.parse(localStorage.getItem(extraKey)||'[]');if(Array.isArray(extras)) extras.slice(0,400).forEach(f=>{if(f&&typeof f.title==='string'&&f.customBox&&['x','y','w','h'].every(k=>Number.isFinite(f.customBox[k]))&&f.customBox.w>0&&f.customBox.h>0) frames.push({k:'CUSTOM',title:f.title.slice(0,120),desc:'Custom zoom and pan position.',target:'all',customBox:f.customBox});});}catch(e){}
+function persistViews(){
+ try{
+  const data={};frames.slice(0,defaultFrames.length).forEach((f,i)=>{if(f.customBox)data[i]=f.customBox;});
+  localStorage.setItem(storageKey,JSON.stringify(data));
+  localStorage.setItem(extraKey,JSON.stringify(frames.slice(defaultFrames.length).map(f=>({title:f.title,customBox:f.customBox}))));
+  return true;
+ }catch(e){alert('This browser could not save the changes. They will remain available until you close this page.');return false;}
+}
+
 function stageRatio(){const r=document.getElementById('view').getBoundingClientRect();return r.width/r.height||1.6;}
 function fitToColumn(target){
   // SVG brain: x=specified x through x+100; y=brain start through brain start+107.
@@ -153,6 +165,8 @@ function renderScene(){
  document.getElementById('sceneLabel').textContent=`Scene ${index+1} of ${frames.length}`;
  document.getElementById('prev').disabled=index===0;
  document.getElementById('next').disabled=index===frames.length-1;
+ document.getElementById('deleteView').disabled=index<defaultFrames.length;
+ document.getElementById('renameView').disabled=index<defaultFrames.length;
  document.querySelectorAll('.statCard').forEach(el=>el.classList.toggle('focus',sc.target==='all'||el.dataset.key===sc.target));
 }
 function flyTo(box){if(anim)cancelAnimationFrame(anim);const start={...current},ts=performance.now(),duration=reduced?0:1150;function step(t){const a=duration?Math.min(1,(t-ts)/duration):1, e=a<.5?4*a*a*a:1-Math.pow(-2*a+2,3)/2;setBox({x:start.x+(box.x-start.x)*e,y:start.y+(box.y-start.y)*e,w:start.w+(box.w-start.w)*e,h:start.h+(box.h-start.h)*e});if(a<1)anim=requestAnimationFrame(step);else anim=null;}anim=requestAnimationFrame(step)}
@@ -162,15 +176,34 @@ function rect(){return svg.getBoundingClientRect()}
 function pointToWorld(clientX,clientY){const r=rect();const s=Math.min(r.width/current.w,r.height/current.h);const offX=(r.width-current.w*s)/2,offY=(r.height-current.h*s)/2;return{x:current.x+(clientX-r.left-offX)/s,y:current.y+(clientY-r.top-offY)/s}}
 function zoomAt(factor,cx,cy){if(anim){cancelAnimationFrame(anim);anim=null;}let p=pointToWorld(cx,cy);let newW=Math.max(32,Math.min(200000,current.w*factor)),newH=Math.max(40,Math.min(200000,current.h*factor));const nx=p.x-(p.x-current.x)*(newW/current.w),ny=p.y-(p.y-current.y)*(newH/current.h);setBox({x:nx,y:ny,w:newW,h:newH});}
 document.getElementById('prev').addEventListener('click',()=>go(index-1));document.getElementById('next').addEventListener('click',()=>go(index+1));document.getElementById('reset').addEventListener('click',()=>go(0));
+document.getElementById('addView').addEventListener('click',()=>{
+ if(anim){cancelAnimationFrame(anim);anim=null;}
+ const proposed=`Brain close-up ${frames.length-defaultFrames.length+1}`;
+ const input=prompt('Name your new view:',proposed);
+ if(input===null)return;
+ const title=input.trim()||proposed;
+ frames.push({k:'CUSTOM',title,desc:'Saved zoom and pan position.',target:'all',customBox:{...current}});
+ index=frames.length-1;renderScene();persistViews();
+});
 document.getElementById('saveView').addEventListener('click',()=>{
+ if(anim){cancelAnimationFrame(anim);anim=null;}
  frames[index].customBox={...current};
- try{const data={};frames.forEach((f,i)=>{if(f.customBox)data[i]=f.customBox;});localStorage.setItem(storageKey,JSON.stringify(data));}
- catch(e){alert('Your browser could not save locally. You can still use the view during this session.');return;}
- const b=document.getElementById('saveView');b.textContent='Saved ✓';setTimeout(()=>b.textContent='Save this view',1400);
+ if(persistViews()){const b=document.getElementById('saveView');b.textContent='Saved ✓';setTimeout(()=>b.textContent='Save this view',1400);}
+});
+document.getElementById('renameView').addEventListener('click',()=>{
+ if(index<defaultFrames.length)return;
+ const input=prompt('Rename this view:',frames[index].title);
+ if(input===null||!input.trim())return;
+ frames[index].title=input.trim();renderScene();persistViews();
+});
+document.getElementById('deleteView').addEventListener('click',()=>{
+ if(index<defaultFrames.length)return;
+ if(!confirm(`Delete “${frames[index].title}”?`))return;
+ frames.splice(index,1);index=Math.min(index,frames.length-1);renderScene();flyTo(sceneBox(index));persistViews();
 });
 document.getElementById('restoreViews').addEventListener('click',()=>{
- frames.forEach(f=>delete f.customBox);try{localStorage.removeItem(storageKey);}catch(e){}
- go(index);
+ if(!confirm('Reset the original five views? Your additional views will stay.'))return;
+ frames.slice(0,defaultFrames.length).forEach(f=>delete f.customBox);persistViews();go(index);
 });
 document.getElementById('zoomIn').addEventListener('click',()=>{let r=rect();zoomAt(.65,r.left+r.width/2,r.top+r.height/2)});
 document.getElementById('zoomOut').addEventListener('click',()=>{let r=rect();zoomAt(1.55,r.left+r.width/2,r.top+r.height/2)});
